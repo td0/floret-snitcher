@@ -46,7 +46,26 @@ function fetchPage(){
             console.log(urli);
             let $ = cheerio.load(html);
             $('.mdCMN05Ttl').each(function(x){
-                writeFormat($(this));
+                //writeFormat($(this));
+                cr = (n==1)?'':'\n\n';
+                if(fmt=='txt'){
+                   l+=cr+e.decode($(this).html())+
+                       "\nhttp://dl.shop.line.naver.jp/themeshop/v1/products/"+
+                       $(this).prev().html().substring(76,123)+
+                       "/ANDROID/theme.zip";
+                }else if(fmt=='json'){
+                   img = $(this).prev().children().attr("src");
+                   id = (img.length == 127)?img.substr(53,48):img.substr(53,47);
+                   if(sjson){
+                       l.theme[e.decode($(this).html())] = id;
+                   }else{
+                       tmp={
+                           "link" : "http://dl.shop.line.naver.jp/themeshop/v1/products/"+id+"/ANDROID/theme.zip",
+                           "img" : img
+                       };
+                       l.theme[e.decode($(this).html())] = (tmp);
+                   }
+                }
             });
 
             console.log("Page "+(i)+" "+fn+" fetched");
@@ -63,10 +82,8 @@ function fetchPage(){
 
 function writeFormat(el){
     cr = (n==1)?'':'\n\n';
-    //console.log(e.decode(el.html()));
     if(fmt=='txt'){
-       l+=cr+(n++).toString()+". "+
-           e.decode(el.html())+
+       l+=cr+e.decode(el.html())+
            "\nhttp://dl.shop.line.naver.jp/themeshop/v1/products/"+
            el.prev().html().substring(76,123)+
            "/ANDROID/theme.zip";
