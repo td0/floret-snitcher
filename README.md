@@ -1,5 +1,4 @@
 # FLORET SNITCHER
-===
 
 Scrapper script written in NodeJS.
 To run this script:
