@@ -4,8 +4,9 @@ var cheerio = require('cheerio');
 var async = require('async');
 var Entities = require('html-entities').AllHtmlEntities;
 
-fmt = "json";
 official = false;
+
+fmt = "json";
 prettyjson = false;
 sjson = false;
 
