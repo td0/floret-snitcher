@@ -11,9 +11,9 @@ node run autoscraper.js
 
 There are 4 configurable variables within the script,
 
-* fmt = "json" or "txt
+* fmt = "json" or "txt"
 
-   to set the scrapped output data to be json or just simple txt file
+   to set the scrapped output data to be .json or just simple .txt file
 
 * official = _true_ or _false_
 
@@ -25,7 +25,7 @@ There are 4 configurable variables within the script,
 
 * sjson = _true_ or _false_
 
-   write the theme ID only or full link
+   write the theme ID only or full link within json output
 
 
 -tdh
