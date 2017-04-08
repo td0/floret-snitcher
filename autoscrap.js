@@ -5,11 +5,11 @@ var async = require('async');
 var Entities = require('html-entities').AllHtmlEntities;
 
 official = false;
+popular = true;
 
 fmt = "txt";
 prettyjson = false;
 sjson = false;
-popular = true;
 
 //String version
 var l=(fmt=="txt")?'':
@@ -63,6 +63,7 @@ function fetchPage(){
 
 function writeFormat(el){
     cr = (n==1)?'':'\n\n';
+    //console.log(e.decode(el.html()));
     if(fmt=='txt'){
        l+=cr+(n++).toString()+". "+
            e.decode(el.html())+
@@ -107,7 +108,7 @@ async.whilst(
         setTimeout(function(){
             fetchPage();
             callback();
-        },3000);
+        },1000);
     },
     function(err){
         console.error(err);
