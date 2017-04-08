@@ -6,9 +6,10 @@ var Entities = require('html-entities').AllHtmlEntities;
 
 official = false;
 
-fmt = "json";
+fmt = "txt";
 prettyjson = false;
 sjson = false;
+popular = true;
 
 //String version
 var l=(fmt=="txt")?'':
@@ -28,8 +29,11 @@ var l=(fmt=="txt")?'':
 var e = new Entities();
 var n = 1;
 var i = 1;
-var url = (official)? "https://store.line.me/themeshop/showcase/new/en?page=" : "https://store.line.me/themeshop/showcase/new_creators/en?page=";
-var fn = (official)? "officials" : "creators";
+var url =  (popular)? "https://store.line.me/themeshop/showcase/top_creators/en?page=" :
+    "https://store.line.me/themeshop/showcase/new/en?page=";
+url = (official)? "https://store.line.me/themeshop/showcase/new/en?page=" : url;
+var fn = (popular)? "creators_popular" : "creators";
+fn = (official)? "officials" : fn;
 var resp = 200;
 
 function fetchPage(){
@@ -101,7 +105,7 @@ async.whilst(
         setTimeout(function(){
             fetchPage();
             callback();
-        },2000);
+        },3000);
     },
     function(err){
         console.error(err);
