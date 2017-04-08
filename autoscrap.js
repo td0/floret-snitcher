@@ -4,12 +4,12 @@ var cheerio = require('cheerio');
 var async = require('async');
 var Entities = require('html-entities').AllHtmlEntities;
 
-official = false;
+official = true;
 popular = true;
 
-fmt = "txt";
-prettyjson = false;
-sjson = false;
+fmt = "json";
+prettyjson = true;
+sjson = true;
 
 //String version
 var l=(fmt=="txt")?'':
@@ -53,6 +53,7 @@ function fetchPage(){
                        "\nhttp://dl.shop.line.naver.jp/themeshop/v1/products/"+
                        $(this).prev().html().substring(76,123)+
                        "/ANDROID/theme.zip";
+                    n++;
                 }else if(fmt=='json'){
                    img = $(this).prev().children().attr("src");
                    id = (img.length == 127)?img.substr(53,48):img.substr(53,47);
