@@ -10,13 +10,13 @@ node run autoscraper.js
 ```
 
 There are 4 configurable variables within the script,
-+fmt = "json" or "txt
+*fmt = "json" or "txt
 to set the scrapped output data to be json or just simple txt file
-+official = _true_ or _false_
+*official = _true_ or _false_
 scrape official themes or creator themes
-+prettyjson = _true_ or _false_
+*prettyjson = _true_ or _false_
 pretty format json output or not
-+sjson = _true_ or _false_
+*sjson = _true_ or _false_
 write the theme ID only or full link
 
 -tdh
