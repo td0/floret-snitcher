@@ -1,0 +1,13 @@
+{
+  "name": "auto-scrapr",
+  "version": "0.0.1",
+  "description": "Scrape le web.",
+  "main": "server.js",
+  "author": "tdh",
+  "dependencies": {
+    "async": "^2.3.0",
+    "cheerio": "latest",
+    "express": "latest",
+    "request": "latest"
+  }
+}
