@@ -88,8 +88,10 @@ function writeFile(){
     if(!fs.existsSync('./output')){
         fs.mkdirSync('./output');
     }
-    if(fmt=="json") l = (prettyjson)? JSON.stringify(l,null,4) : JSON.stringify(l);
-    fn = (sjson)? fn:'l-'+fn;
+    if(fmt=="json"){ 
+        l = (prettyjson)? JSON.stringify(l,null,4) : JSON.stringify(l);
+        fn = (sjson)? fn:'l-'+fn;
+    }
     fs.writeFile("./output/"+fn+"."+fmt, l, function(err){
         if(!err) console.log('\nFile successfully written!'+
             '\nCheck your project directory for the \'./output/'+fn+'.'+fmt+'\' directory');
