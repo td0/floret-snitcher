@@ -87,6 +87,7 @@ function writeFormat(el){
            "\nhttp://dl.shop.line.naver.jp/themeshop/v1/products/"+
            el.prev().html().substring(76,123)+
            "/ANDROID/theme.zip";
+        n++;
     }else if(fmt=='json'){
        img = el.prev().children().attr("src");
        id = (img.length == 127)?img.substr(53,48):img.substr(53,47);
