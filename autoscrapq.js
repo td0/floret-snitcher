@@ -96,48 +96,47 @@ var fn = (pop)? "creators_popular" : "creators";
 fn = (official)? "officials" : fn;
 var resp = 200;
 
-function fetchPage(){
-    urli=url+i.toString();
-    request(urli, function(error, response, html){
-        resp = response.statusCode ;
-        if(!error && response.statusCode==200){
-            let $ = cheerio.load(html);
-            $('.mdCMN05Ttl').each(function(){
-                cr = (n==1)?'':'\n\n';
-                if(fmt=='txt'){
-                   l+=cr+e.decode($(this).html())+
-                       "\nhttp://dl.shop.line.naver.jp/themeshop/v1/products/"+
-                       $(this).prev().html().substring(76,123)+
-                       "/ANDROID/theme.zip";
-                    n++;
-                }else if(fmt=='json'){
-                   img = $(this).prev().children().attr("src");
-                   id = (img.length == 127)?img.substr(53,48):img.substr(53,47);
-                   if(!fjson){
-                       l.theme[e.decode($(this).html())] = id;
-                   }else{
-                       tmp={
-                           "link" : "http://dl.shop.line.naver.jp/themeshop/v1/products/"+
-                                       id+"/ANDROID/theme.zip",
-                           "img" : img
-                       };
-                       l.theme[e.decode($(this).html())] = (tmp);
-                   }
-                }
-            });
-            rl.write("\tFetching "+i+" Page(s)");
-            readline.cursorTo(rl,0);
-            i++;
-        }else{
-            resp=0;
-            readline.moveCursor(rl,0,2);
-            rl.write("Page "+i+" response code : "+response.statusCode);
-            readline.cursorTo(rl,0);
-        }
-    });
-}
+q = async.queue(function(task,callback){
+        request(task.url, function(error, response, html){
+            resp = response.statusCode ;
+            if(!error && response.statusCode==200){
+                let $ = cheerio.load(html);
+                $('.mdCMN05Ttl').each(function(){
+                    cr = (n==1)?'':'\n\n';
+                    if(fmt=='txt'){
+                       l+=cr+e.decode($(this).html())+
+                           "\nhttp://dl.shop.line.naver.jp/themeshop/v1/products/"+
+                           $(this).prev().html().substring(76,123)+
+                           "/ANDROID/theme.zip";
+                        n++;
+                    }else if(fmt=='json'){
+                       img = $(this).prev().children().attr("src");
+                       id = (img.length == 127)?img.substr(53,48):img.substr(53,47);
+                       if(!fjson){
+                           l.theme[e.decode($(this).html())] = id;
+                       }else{
+                           tmp={
+                               "link" : "http://dl.shop.line.naver.jp/themeshop/v1/products/"+
+                                           id+"/ANDROID/theme.zip",
+                               "img" : img
+                           };
+                           l.theme[e.decode($(this).html())] = (tmp);
+                       }
+                    }
+                });
+                rl.write("\tFetching "+i+" Page(s)");
+                readline.cursorTo(rl,0);
+            }else{
+                resp=0;
+                readline.moveCursor(rl,0,2);
+                rl.write("Page "+i+" response code : "+response.statusCode);
+                readline.cursorTo(rl,0);
+            }
+        });
+        callback();
+    },5);
 
-function writeFile(){
+q.drain = function(){
     if(!fs.existsSync('./output')){
         fs.mkdirSync('./output');
     }
@@ -160,24 +159,11 @@ function writeFile(){
     });
 }
 
-async.whilst(
-    function(){ 
-        return resp==200;
-    },
-    function(callback){
-        setTimeout(function(){
-            fetchPage();
-            callback();
-        },2000);
-    },
-    function(err){
-        setTimeout(function(){
-            writeFile();
-            rl.close();
-            process.stdin.destroy();
-        },1000);
-    }
-);
+while(resp==200){
+    i++;
+    urli=url+i.toString();
+    q
+}
 
 
 

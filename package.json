@@ -1,13 +1,17 @@
 {
-  "name": "auto-scrapr",
-  "version": "0.0.1",
-  "description": "Scrape le web.",
-  "main": "server.js",
+  "name": "floret-snitcher",
+  "version": "0.1.1",
+  "description": "Gratter le fleur",
+  "main": "autoscrap.js",
   "author": "tdh",
   "dependencies": {
+    "argparse": "^1.0.9",
     "async": "^2.3.0",
     "cheerio": "latest",
     "express": "latest",
     "request": "latest"
+  },
+  "devDependencies": {
+    "merge": "^1.2.0"
   }
 }
