@@ -1,6 +1,6 @@
 # FLORET SNITCHER
 
-Scrapper script written in NodeJS. Nodejs has to be installed to this script.
+Scrapper script written in NodeJS. Nodejs has to be installed to run this script.
 Here's how to run it:
 
 ```bash
@@ -11,7 +11,7 @@ npm install
 
 <br />
 
-There are 5 available argument options.
+Available argument options:
 
 | Arguments       |  Explanations          												|
 | --------------- | ------------------------------------------------------------------- |
