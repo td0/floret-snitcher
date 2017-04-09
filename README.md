@@ -6,7 +6,7 @@ Here's how to run it:
 ```bash
 git clone https://github.com/td0/floret-snitcher.git
 npm install
-./flower-snitcher
+./floret-snitcher
 ```
 
 There are 4 configurable variables within the script,
