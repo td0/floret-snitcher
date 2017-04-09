@@ -14,5 +14,6 @@
 
 
 var file = process.argv[2];
+if(file[0]!='.') file="./"+file;
 var a = require(file);
 console.log(Object.keys(a.theme).length);

@@ -1,16 +1,12 @@
+#!/usr/bin/env node
+
 const fs = require('fs');
-const request = require('request');
+const rp = require('request-promise');
 const cheerio = require('cheerio');
 const async = require('async');
-const readline = require('readline');
 const ArgumentParser = require('argparse').ArgumentParser;
 const Entities = require('html-entities').AllHtmlEntities;
 const pjson = require('./package.json');
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
 
 var argparser = new ArgumentParser({
     version: pjson.version,
@@ -71,7 +67,17 @@ str = (fmt==="json")? str+
 str = str+"\n";
 console.log(str); 
 
-//String version
+const e = new Entities();
+var n = 1; //total themes fetched
+var dupe = 0; //total duplicate themes
+var i = 1; //page fetched
+var resp = 200; //initial responseCode
+
+var url =  (pop)? "https://store.line.me/themeshop/showcase/top_creators/en?page=" :
+    "https://store.line.me/themeshop/showcase/new_creators/en?page=";
+url = (official)? "https://store.line.me/themeshop/showcase/new/en?page=" : url;
+var fn = (pop)? "creators_pop" : "creators_new";
+fn = (official)? "officials" : fn;
 var l=(fmt=="txt")?'':
     {
         dlink:"http://dl.shop.line.naver.jp/themeshop/v1/products/<THEME_ID>/<DEVICE_PLATFORM>/theme.zip",
@@ -85,77 +91,66 @@ var l=(fmt=="txt")?'':
         theme:{}
     }; 
 
-
-var e = new Entities();
-var n = 1;
-var i = 1;
-var url =  (pop)? "https://store.line.me/themeshop/showcase/top_creators/en?page=" :
-    "https://store.line.me/themeshop/showcase/new_creators/en?page=";
-url = (official)? "https://store.line.me/themeshop/showcase/new/en?page=" : url;
-var fn = (pop)? "creators_popular" : "creators";
-fn = (official)? "officials" : fn;
-var resp = 200;
-
-function fetchPage(){
-    urli=url+i.toString();
-    request(urli, function(error, response, html){
-        resp = response.statusCode ;
-        if(!error && response.statusCode==200){
-            let $ = cheerio.load(html);
-            $('.mdCMN05Ttl').each(function(){
-                cr = (n==1)?'':'\n\n';
-                if(fmt=='txt'){
-                   l+=cr+e.decode($(this).html())+
-                       "\nhttp://dl.shop.line.naver.jp/themeshop/v1/products/"+
-                       $(this).prev().html().substring(76,123)+
-                       "/ANDROID/theme.zip";
+function fetchPage(callback){
+    urli = url+i.toString();
+    var options = {
+        method: 'GET',
+        uri: urli,
+        resolveWithFullResponse: true
+    };
+    rp(options)
+    .then(function(response){
+        let $ = cheerio.load(response.body);
+        $('.mdCMN05Ttl').each(function(){
+            cr = (n==1)?'':'\n\n';
+            img = $(this).prev().children().attr("src");
+            id = (img.length == 127)?img.substr(53,48):img.substr(53,47);
+            dl = "http://dl.shop.line.naver.jp/themeshop/v1/products/"+
+                   id+"/ANDROID/theme.zip";
+            tn = e.decode($(this).html());
+            if(fmt=='txt'){
+                    l+=cr+tn+"\n"+dl;
                     n++;
-                }else if(fmt=='json'){
-                   img = $(this).prev().children().attr("src");
-                   id = (img.length == 127)?img.substr(53,48):img.substr(53,47);
-                   if(!fjson){
-                       l.theme[e.decode($(this).html())] = id;
-                   }else{
-                       tmp={
-                           "link" : "http://dl.shop.line.naver.jp/themeshop/v1/products/"+
-                                       id+"/ANDROID/theme.zip",
-                           "img" : img
-                       };
-                       l.theme[e.decode($(this).html())] = (tmp);
-                   }
+            }else if(fmt=='json'){
+                if(l.theme[tn] !== undefined) dupe++;
+                else{
+                    n++;
+                    l.theme[tn] = (!fjson)? id :
+                        { "link" : dl,"img" : img };
                 }
-            });
-            rl.write("\tFetching "+i+" Page(s)");
-            readline.cursorTo(rl,0);
-            i++;
-        }else{
-            resp=0;
-            readline.moveCursor(rl,0,2);
-            rl.write("Page "+i+" response code : "+response.statusCode);
-            readline.cursorTo(rl,0);
+            }
+        });
+        process.stdout.write(i+" Pages, "+
+            (n-1)+" Themes, "+
+            dupe+" Duplicates\r");
+        i++;
+        callback();
+    })
+    .catch(function(err){
+        resp=err.statusCode;
+        if(resp==undefined) console.log(err);
+        else{
+            process.stdout.write("\n\n"+urli+
+                "\nresponse code : "+resp);  
         }
+        callback(err);
     });
 }
 
 function writeFile(){
-    if(!fs.existsSync('./output')){
-        fs.mkdirSync('./output');
-    }
+    const odir = './output';
+    if(!fs.existsSync(odir)) fs.mkdirSync(odir);
     if(fmt=="json"){ 
         l = (tjson)? JSON.stringify(l,null,4) : JSON.stringify(l);
         fn = (fjson)? 'l-'+fn:fn;
     }
     fs.writeFile("./output/"+fn+"."+fmt, l, function(err){
         if(!err){
-            readline.cursorTo(rl,0);
-            readline.moveCursor(rl,0,1);
-            rl.write('\nFile successfully written!'+
+            process.stdout.write('\n\nFile successfully written!'+
                 '\nCheck your project directory for the \'./output/'+
                 fn+'.'+fmt+'\' directory\n');
         }else{
-            readline.cursorTo(rl,0);
-            readline.moveCursor(rl,0,2);
-            rl.write(err);
+            process.stdout.write("\033[<2>B"+err);
         }
     });
 }
@@ -164,17 +159,10 @@ async.whilst(
     function(){ 
         return resp==200;
     },
-    function(callback){
-        setTimeout(function(){
-            fetchPage();
-            callback();
-        },2000);
-    },
+    fetchPage,
     function(err){
         setTimeout(function(){
             writeFile();
-            rl.close();
-            process.stdin.destroy();
         },1000);
     }
 );

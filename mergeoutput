@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+var arg1 = process.argv[2];
+
+var fn = '';
+if(arg1 == 'l' && arg1 != undefined){
+    arg1='./output/l-creators_new.json';
+    arg2='./output/l-creators_pop.json';
+    fn = 'l-creators.json';
+}else{
+    arg1='./output/creators_new.json';
+    arg2='./output/creators_pop.json';
+    fn = 'creators.json';
+}
+
+const jnew = require(arg1);
+const jpop = require(arg2);
+var merged = {};
+
+merged.dlink = jnew.dlink;
+merged.img = jnew.img;
+merged.theme = jnew.theme;
+
+popkey = Object.keys(jpop.theme);
+for(var idx=0, len=popkey.length;idx<len;idx++){
+    merged.theme[popkey[idx]] = jpop.theme[popkey[idx]];
+}
+
+fs.writeFile("./output/"+fn, JSON.stringify(merged), function(err){
+    if(!err){
+        process.stdout.write('\n\nFile successfully merged!'+
+            '\nCheck your project directory for the \'./output/'+
+            fn+'\n');
+    }else{
+        process.stdout.write("\033[<2>B"+err);
+    }
+});

@@ -9,7 +9,8 @@
     "async": "^2.3.0",
     "cheerio": "latest",
     "express": "latest",
-    "request": "latest"
+    "request": "latest",
+    "request-promise": "^4.2.0"
   },
   "devDependencies": {
     "merge": "^1.2.0"
