@@ -2,8 +2,8 @@
   "name": "floret-snitcher",
   "version": "1.0.0",
   "description": "Gratter le fleur",
-  "main": "autoscrap.js",
-  "author": "tdh",
+  "main": "floret-snitcher",
+  "author": "td0",
   "dependencies": {
     "argparse": "^1.0.9",
     "async": "^2.3.0",
