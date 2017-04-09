@@ -134,37 +134,40 @@ q = async.queue(function(task,callback){
             }
         });
         callback();
-    },5);
+    },2);
+
 
 q.drain = function(){
-    if(!fs.existsSync('./output')){
-        fs.mkdirSync('./output');
+    if(!fs.existsSync('./outputq')){
+        fs.mkdirSync('./outputq');
     }
     if(fmt=="json"){ 
         l = (tjson)? JSON.stringify(l,null,4) : JSON.stringify(l);
         fn = (fjson)? 'l-'+fn:fn;
     }
-    fs.writeFile("./output/"+fn+"."+fmt, l, function(err){
+    fs.writeFile("./outputq/"+fn+"."+fmt, l, function(err){
         if(!err){
             readline.cursorTo(rl,0);
             readline.moveCursor(rl,0,1);
             rl.write('\nFile successfully written!'+
                 '\nCheck your project directory for the \'./output/'+
                 fn+'.'+fmt+'\' directory\n');
+            rl.close();
         }else{
             readline.cursorTo(rl,0);
             readline.moveCursor(rl,0,2);
             rl.write(err);
+            rl.close();
         }
     });
 }
 
-while(resp==200){
-    i++;
-    urli=url+i.toString();
-    q
-}
 
+//while(resp==200 && i<10){
+    //i++;
+    urli=url+i.toString();
+    q.push({url:urli})
+//}
 
 
 
