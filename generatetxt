@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const obj = require('./output/creators.json').theme;
+var txt = '';
+const fn = "creators.txt";
+
+var first=true;
+var cr='';
+for(k in obj){
+    txt += cr;
+    txt += k+"\n";
+    txt += "http://dl.shop.line.naver.jp/themeshop/v1/products/"
+        +obj[k]+"/ANDROID/theme.zip";
+    if(first){
+        cr = "\n\n";
+        first = !first;
+    }
+}
+
+fs.writeFile("./output/"+fn, txt, function(err){
+    if(!err){
+        process.stdout.write('\n\n.txt file successfully generated!'+
+            '\nCheck your project directory for the \'./output/'+
+            fn+'\n');
+    }else{
+        process.stdout.write("\033[<2>B"+err);
+    }
+});
