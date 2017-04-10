@@ -16,15 +16,11 @@ if(arg1 == 'l' && arg1 != undefined){
 
 const jnew = require(arg1);
 const jpop = require(arg2);
-var merged = {};
-
-merged.dlink = jnew.dlink;
-merged.img = jnew.img;
-merged.theme = jnew.theme;
+var merged = jnew.theme;
 
 popkey = Object.keys(jpop.theme);
 for(var idx=0, len=popkey.length;idx<len;idx++){
-    merged.theme[popkey[idx]] = jpop.theme[popkey[idx]];
+    merged[popkey[idx]] = jpop.theme[popkey[idx]];
 }
 
 fs.writeFile("./output/"+fn, JSON.stringify(merged), function(err){

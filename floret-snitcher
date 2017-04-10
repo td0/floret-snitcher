@@ -79,19 +79,7 @@ var url =  (pop)? "https://store.line.me/themeshop/showcase/top_creators/en?page
 url = (official)? "https://store.line.me/themeshop/showcase/new/en?page=" : url;
 var fn = (pop)? "creators_pop" : "creators_new";
 fn = (official)? "officials" : fn;
-var l=(fmt=="txt")?'':
-    {
-        dlink:"http://dl.shop.line.naver.jp/themeshop/v1/products/<THEME_ID>/<DEVICE_PLATFORM>/theme.zip",
-        img:{
-            a:"https://sdl-shop.line.naver.jp/themeshop/v1/products/<THEME_ID>/ANDROID/en/preview_001_720x1232.png",
-            b:"https://sdl-shop.line.naver.jp/themeshop/v1/products/<THEME_ID>/ANDROID/en/preview_002_720x1232.png",
-            c:"https://sdl-shop.line.naver.jp/themeshop/v1/products/<THEME_ID>/ANDROID/en/preview_003_720x1232.png",
-            d:"https://sdl-shop.line.naver.jp/themeshop/v1/products/<THEME_ID>/ANDROID/en/preview_004_720x1232.png",
-            e:"https://sdl-shop.line.naver.jp/themeshop/v1/products/<THEME_ID>/ANDROID/en/preview_005_720x1232.png"
-        },
-        theme:{}
-    }; 
-
+var l=(fmt=="txt")?'' : {}; 
 
 var cq= 0;
 var q = async.queue(function(task, callback){
@@ -115,10 +103,10 @@ var q = async.queue(function(task, callback){
                     l+=cr+tn+"\n"+dl;
                     n++;
             }else if(fmt=='json'){
-                if(l.theme[tn] !== undefined) dupe++;
+                if(l[tn] !== undefined) dupe++;
                 else{
                     n++;
-                    l.theme[tn] = (!fjson)? id :
+                    l[tn] = (!fjson)? id :
                         { "link" : dl,"img" : img };
                 }
             }
