@@ -3,4 +3,5 @@
 var file = process.argv[2];
 if(file[0]!='.') file="./"+file;
 var a = require(file);
-console.log(Object.keys(a.theme).length);
+if(a.theme==undefined) console.log(Object.keys(a).length);
+else console.log(Object.keys(a.theme).length);

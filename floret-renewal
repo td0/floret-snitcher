@@ -1,0 +1,116 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const rp = require('request-promise');
+const cheerio = require('cheerio');
+const async = require('async');
+const ArgumentParser = require('argparse').ArgumentParser;
+const Entities = require('html-entities').AllHtmlEntities;
+const pjson = require('./package.json');
+
+var official = args.c;
+var pop = args.n;
+var fmt = (args.j)?"json":"txt";
+var tjson = args.t;
+var fjson = args.f;
+
+let str = "\n\tFloret Renewal\n\nTheme Target\t: "+
+    ((official)?"Official":"Creator")+
+    "\nFiletype\t: ."+fmt;
+str = (official)? str:str+
+    "\nCategory\t: "+ ((pop)?"Popular":"New");
+str = (fmt==="json")? str+
+    "\nFormatting\t: "+ ((fjson)?"Full + ":"Short + ")+
+    ((tjson)?"Tabbed":"Single-Line"):str;
+str = str+"\n";
+console.log(str); 
+
+const e = new Entities();
+var n = 1; //total themes fetched
+var dupe = 0; //total duplicate themes
+var i = 1; //page fetched
+var resp = 200; //initial responseCode
+const mxi = (official) ? 9:209;
+
+var url =  (pop)? "https://store.line.me/themeshop/showcase/top_creators/en?page=" :
+    "https://store.line.me/themeshop/showcase/new_creators/en?page=";
+url = (official)? "https://store.line.me/themeshop/showcase/new/en?page=" : url;
+var fn = (pop)? "creators_pop" : "creators_new";
+fn = (official)? "officials" : fn;
+var l=(fmt=="txt")?'' : {}; 
+
+var cq= 0;
+var q = async.queue(function(task, callback){
+    var options = {
+        method: 'GET',
+        uri: task.url,
+        resolveWithFullResponse: true
+    };
+    rp(options)
+    .then(function(response){
+        let $ = cheerio.load(response.body);
+        $('.mdCMN05Ttl').each(function(){
+            cr = (n==1)?'':'\n\n';
+            img = $(this).prev().children().attr("src");
+            id = (img.length == 127)?img.substr(53,48):img.substr(53,47);
+            dl = "http://dl.shop.line.naver.jp/themeshop/v1/products/"+
+                   id+"/ANDROID/theme.zip";
+            tn = e.decode($(this).html());
+            if(!official && pop) tn=tn.substr((tn.indexOf('.'))+2);
+            if(fmt=='txt'){
+                    l+=cr+tn+"\n"+dl;
+                    n++;
+            }else if(fmt=='json'){
+                if(l[tn] !== undefined) dupe++;
+                else{
+                    n++;
+                    l[tn] = (!fjson)? id :
+                        { "link" : dl,"img" : img };
+                }
+            }
+        });
+        callback();
+    })
+    .catch(function(err){
+        resp=err.statusCode;
+        if(resp==undefined) console.log(err);
+        else{
+            process.stdout.write("\n\n"+task.url+
+                "\nresponse code : "+resp);  
+        }
+        callback(err);
+    });
+}, 4);
+
+q.drain = function(){
+    const odir = './output/';
+    if(!fs.existsSync(odir)) fs.mkdirSync(odir);
+    if(fmt=="json"){ 
+        l = (tjson)? JSON.stringify(l,null,4) : JSON.stringify(l);
+        fn = (fjson)? 'l-'+fn:fn;
+    }
+    fs.writeFile(odir+fn+"."+fmt, l, function(err){
+        if(!err){
+            process.stdout.write('\n\nFile successfully written!'+
+                "\nCheck your project directory for the '"+odir+
+                fn+'.'+fmt+"' directory\n");
+        }else{
+            process.stdout.write("\033[<2>B"+err);
+        }
+    });
+}
+
+while(i <= mxi){
+    q.push({url:url+i}, function(){
+       cq++;
+       process.stdout.write(cq+" Pages, "+
+            (n-1)+" Themes, "+
+            dupe+" Duplicates\r");
+    });
+    i++;
+}
+
+
+
+
+
