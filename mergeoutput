@@ -1,34 +1,44 @@
 #!/usr/bin/env node
-
+const readline = require('readline');
 const fs = require('fs');
-var arg1 = process.argv[2];
 
-var fn = '';
-if(arg1 == 'l' && arg1 != undefined){
-    arg1='./output/l-creators_new.json';
-    arg2='./output/l-creators_pop.json';
-    fn = 'l-creators.json';
-}else{
-    arg1='./output/creators_new.json';
-    arg2='./output/creators_pop.json';
-    fn = 'creators.json';
-}
-
-const jnew = require(arg1);
-const jpop = require(arg2);
-var merged = jpop.theme;
-
-newkey = Object.keys(jnew.theme);
-for(var idx=0, len=newkey.length;idx<len;idx++){
-    merged[newkey[idx]] = jnew.theme[newkey[idx]];
-}
-
-fs.writeFile("./output/"+fn, JSON.stringify(merged), function(err){
-    if(!err){
-        process.stdout.write('\n\nFile successfully merged!'+
-            '\nCheck your project directory for the \'./output/'+
-            fn+'\n');
-    }else{
-        process.stdout.write("\033[<2>B"+err);
-    }
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
 });
+
+var arg1 = process.argv[2],
+    arg2 = process.argv[3];
+
+var fn = 'tes.json';
+
+if(arg1 != undefined && arg2 != undefined){
+    
+
+    const j1 = require(arg1);
+    const j2 = require(arg2);
+    var merged = j1;
+
+    j2key = Object.keys(j2);
+    for(var idx=0, len=j2key.length; idx<len; idx++){
+        merged[j2key[idx]] = j2[j2key[idx]];
+    }
+
+    rl.question('enter merged file name : ', (answer) => {
+        fn = answer;
+        console.log('merged file name is : ' + fn);  
+
+        fs.writeFile('./output/'+fn+'.json', JSON.stringify(merged), function(err){
+            if(!err){
+                process.stdout.write('\n\nFile successfully merged!'+
+                    '\nCheck your project directory for the \'./output/'+
+                    fn+'\n');
+            }else{
+                process.stdout.write('\033[<2>B' + err);
+            }
+        });
+        rl.close();
+    });
+
+}
+

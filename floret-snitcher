@@ -72,7 +72,7 @@ var n = 1; //total themes fetched
 var dupe = 0; //total duplicate themes
 var i = 1; //page fetched
 var resp = 200; //initial responseCode
-const mxi = (official) ? 9:209;
+const mxi = (official) ? 11:209;
 
 var url =  (pop)? "https://store.line.me/themeshop/showcase/top_creators/en?page=" :
     "https://store.line.me/themeshop/showcase/new_creators/en?page=";
@@ -118,11 +118,11 @@ var q = async.queue(function(task, callback){
         if(resp==undefined) console.log(err);
         else{
             process.stdout.write("\n\n"+task.url+
-                "\nresponse code : "+resp);  
+                "\nresponse code : "+resp+"\n");  
         }
-        callback(err);
+        q.kill();
     });
-}, 4);
+}, 1);
 
 q.drain = function(){
     const odir = './output/';
