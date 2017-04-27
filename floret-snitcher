@@ -28,61 +28,85 @@ argparser.addArgument(
     }
 );
 argparser.addArgument(
-    '-n',
+    '-t',
     {
-        help: 'Scrape new category instead of popular',
-        action: 'storeFalse'
+        // help: 'Get spaced & tabbed json instead of single-line one',
+        action: 'storeTrue'
     }
 );
 argparser.addArgument(
-    '-t',
+    [ '-q', '--queue' ],
     {
-        help: 'Get spaced & tabbed json instead of single-line one',
-        action: 'storeTrue'
+        help: 'number of item fetched in a single queue (default = 3)',
+        defaultValue: 3,
+        action: 'store'
     }
 );
 argparser.addArgument(
     '-f',
     {
-        help: 'Get fulll json containing full hyperlink instead of name and ID',
+        // help: 'Get fulll json containing full hyperlink instead of name and ID',
         action: 'storeTrue'
     }
 );
 args=argparser.parseArgs();
 
-var official = args.c; // true : official || false : creator
-var pop = args.n; // true : popular || false : new
-var fmt = (args.j)?"json":"txt"; // json or txt formating for output
-var tjson = args.t; // true : tabbed json || false : single-line json
-var fjson = args.f; // true : full data json || false : short data json
-var items_per_q = 1; // items fetched per queue
-var failedflag = false;
+var retry = 3; // retry limit 
+const items_per_q = args.queue; // items fetched per queue
+const official = args.c; // true : official || false : creator
+const fmt = (args.j)?'json':'txt'; // json or txt formating for output
+const tjson = args.t; // true : tabbed json || false : single-line json
+const fjson = args.f; // true : full data json || false : short data json
+var failedflag = false; // if an item failed, this will turn into true
 var failedPages = []; // array of pages that are failed to be fetched
-const e = new Entities();
+var ctx = 1; // pages downloaded loop index
 var n = 1; // total themes fetched
 var dupe = 0; // total duplicate themes
-var ctx = 1; // page loop index
 var resp = 200; // initial responseCode
-const mxi = (official) ? 10:209; // maximum amount of pages
+var l=(fmt=='txt')?'' : {};  // the output data get stored in this variable
+const e = new Entities();
+const mxi = (official) ? 15:209; // maximum amount of pages
 
 
-let str = "\n\tGratter Commence\n\nTheme Target\t: "+
-    ((official)?"Official":"Creator")+
-    "\nFiletype\t: ."+fmt;
-str = (official)? str:str+
-    "\nCategory\t: "+ ((pop)?"Popular":"New");
-str = (fmt==="json")? str+
-    "\nFormatting\t: "+ ((fjson)?"Full + ":"Short + ")+
+/*
+Reset = "\x1b[0m"
+Bright = "\x1b[1m"
+Dim = "\x1b[2m"
+Underscore = "\x1b[4m"
+Blink = "\x1b[5m"
+Reverse = "\x1b[7m"
+Hidden = "\x1b[8m"
+
+FgBlack = "\x1b[30m"
+FgRed = "\x1b[31m"
+FgGreen = "\x1b[32m"
+FgYellow = "\x1b[33m"
+FgBlue = "\x1b[34m"
+FgMagenta = "\x1b[35m"
+FgCyan = "\x1b[36m"
+FgWhite = "\x1b[37m"
+
+BgBlack = "\x1b[40m"
+BgRed = "\x1b[41m"
+BgGreen = "\x1b[42m"
+BgYellow = "\x1b[43m"
+BgBlue = "\x1b[44m"
+BgMagenta = "\x1b[45m"
+BgCyan = "\x1b[46m"
+BgWhite = "\x1b[47m"
+*/
+
+let str = '\n\t\x1b[33m\x1b[1m\x1b[4mGratter Commence\x1b[0m'+
+    '\n\n\x1b[34mTheme Target\x1b[0m\t: '+
+    ((official)? 'Official' : 'Creator')+
+    '\n\x1b[34mFiletype\x1b[0m\t: .'+fmt;
+str = (fmt==='json')? str+
+    '\n\x1b[34mFormatting\x1b[0m\t: '+ ((fjson)?'Full + ':'Short + ')+
     ((tjson)?"Tabbed":"Single-Line"):str;
-str = str+"\nGranularity\t: "+ items_per_q +" item(s)/queue\n";
+str = str+'\n\x1b[34mGranularity\x1b[0m\t: '+
+    items_per_q + ' item(s)/queue\n';
 console.log(str); 
 
-var url =  (pop)? "https://store.line.me/themeshop/showcase/top_creators/en?page=" :
-    "https://store.line.me/themeshop/showcase/new_creators/en?page=";
-url = (official)? "https://store.line.me/themeshop/showcase/new/en?page=" : url;
-var fn = (pop)? "creators_pop" : "creators_new";
-fn = (official)? "officials" : fn;
-var l=(fmt=="txt")?'' : {}; 
 
 var q = async.queue(function(task, callback){
     var options = {
@@ -95,12 +119,11 @@ var q = async.queue(function(task, callback){
         let $ = cheerio.load(response.body);
         $('.mdCMN05Ttl').each(function(){
             cr = (n==1)?'':'\n\n';
-            img = $(this).prev().children().attr("src");
+            img = $(this).prev().children().attr('src');
             id = (img.length == 127)?img.substr(53,48):img.substr(53,47);
-            dl = "http://dl.shop.line.naver.jp/themeshop/v1/products/"+
-                   id+"/ANDROID/theme.zip";
+            dl = 'http://dl.shop.line.naver.jp/themeshop/v1/products/'+
+                   id+'/ANDROID/theme.zip';
             tn = e.decode($(this).html());
-            // if(!official && pop) tn=tn.substr((tn.indexOf('.'))+2);
             if(fmt=='txt'){
                     l+=cr+tn+"\n"+dl;
                     n++;
@@ -109,7 +132,7 @@ var q = async.queue(function(task, callback){
                 else{
                     n++;
                     l[tn] = (!fjson)? id :
-                        { "link" : dl,"img" : img };
+                        { 'link' : dl,'img' : img };
                 }
             }
         });
@@ -122,8 +145,8 @@ var q = async.queue(function(task, callback){
             q.kill();
         }
         else{
-            process.stdout.write("Error : "+task.url+
-                " code : "+resp+"\n");  
+            process.stdout.write('\x1b[31mError : '+task.url+
+                ' \x1b[33mcode : '+resp+'\x1b[0m\n');  
         }
 
         callback(task.idx,resp);
@@ -131,42 +154,61 @@ var q = async.queue(function(task, callback){
 }, items_per_q);
 
 q.drain = function(){
-    if(failedflag){
-        failedflag = false;
-        console.log(`\n\nFailed Pages: ${failedPages.toString()}\nRetrying\n\n`);
+    if((failedflag && retry>0) && resp != 404){
         var tmpFailedPages = failedPages;
         failedPages = [];
+        retry--;
+        failedflag = false;
+        console.log(`\n\n\x1b[33mFailed Pages: \x1b[31m${tmpFailedPages.toString()}\n\x1b[33mRetrying..\x1b[36m`);
         for(var loop_i = 0; loop_i<tmpFailedPages.length; loop_i++){
             safePush(tmpFailedPages[loop_i]);
         }
-    }
-    else{
-        const odir = './output/';
-        if(!fs.existsSync(odir)) fs.mkdirSync(odir);
-        if(fmt=="json"){ 
-            l = (tjson)? JSON.stringify(l,null,4) : JSON.stringify(l);
-            fn = (fjson)? 'l-'+fn:fn;
+    }else{
+        part--; retry = 3;
+        failedPages = [];
+        console.log('\n\x1b[42m\x1b[30mDone!\x1b[0m');
+        if(part == 0){
+            writeFile();
+        }else{
+            console.log('\n\n\x1b[45m\x1b[37m Fetching Creators\' new themes \x1b[0m');
+            doLoopQueue();
         }
-        fs.writeFile(odir+fn+"."+fmt, l, function(err){
-            if(!err){
-                process.stdout.write('\n\nFile successfully written!'+
-                    "\nCheck your project directory for the '"+odir+
-                    fn+'.'+fmt+"' directory\n");
-            }else{
-                process.stdout.write("\033[<2>B"+err);
-            }
-        });
     }
 }
 
-
+function writeFile(){
+    var odir;
+    if(fjson) odir = './output/redundant/';
+    else if(fmt == 'txt') odir = './output/txt/';
+    else odir = './output/';
+    if(!fs.existsSync(odir)) fs.mkdirSync(odir);
+    if(fmt=="json"){ 
+        l = (tjson)? JSON.stringify(l,null,4) : JSON.stringify(l);
+        fn = (fjson)? 'l-'+fn:fn;
+    }
+    fs.writeFile(odir+fn+"."+fmt, l, function(err){
+        if(!err){
+            process.stdout.write('\n\n\x1b[32mFile successfully written!'+
+                '\nCheck your project directory for the "\x1b[33m'+odir+
+                fn+'.'+fmt+'\x1b[32m" directory\x1b[0m\n');
+        }else{
+            process.stdout.write('\033[<2>B'+err);
+        }
+    });
+}
 
 function safePush(safe_i){
-    q.push({url:url+safe_i, idx: safe_i}, function(x,y){
-        process.stdout.write("on page "+x+
-            " -> "+ctx+" Pages, "+
-            (n-1)+" Themes, "+
-            dupe+" Duplicates\r");
+    var urli;
+    if(official){
+        urli = url;
+    }else{
+        urli = (part == 2)? url[0]: url[1];
+    }
+    q.push({url:urli+safe_i, idx: safe_i}, function(x,y){
+        process.stdout.write('on page '+x+
+            ' -> '+ctx+' Pages, '+
+            (n-1)+' Themes, '+
+            dupe+' Duplicates\r');
         if(y!=undefined){
             failedflag = true;
             failedPages.push(x);
@@ -176,9 +218,25 @@ function safePush(safe_i){
     });
 }
 
-for(var i = 1; i <= mxi; i++){
-    safePush(i);
+function doLoopQueue(){
+    for(var i = 1; i <= mxi; i++){
+        safePush(i);
+    }
 }
+
+var url,fn,part;
+if(official){
+    url = 'https://store.line.me/themeshop/showcase/new/en?page=';
+    fn = 'officials';
+    part = 1;
+}else{
+    url = ['https://store.line.me/themeshop/showcase/top_creators/en?page=',
+        'https://store.line.me/themeshop/showcase/new_creators/en?page='];
+    fn = 'creators_tmp';
+    part = 2;
+    console.log('\x1b[45m\x1b[37m Fetching Creators\' popular themes \x1b[0m');
+}
+doLoopQueue();
 
 
 

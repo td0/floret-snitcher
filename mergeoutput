@@ -7,10 +7,10 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-var arg1 = process.argv[2],
-    arg2 = process.argv[3];
+var arg1 = (process.argv[2][0] == '.')? process.argv[2] : './'+process.argv[2];
+var arg2 = (process.argv[3][0] == '.')? process.argv[3] : './'+process.argv[3];
 
-var fn = 'tes.json';
+var fn = 'boilerplate.json';
 
 if(arg1 != undefined && arg2 != undefined){
     
