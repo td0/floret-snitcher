@@ -8,6 +8,7 @@
     "argparse": "^1.0.9",
     "async": "^2.3.0",
     "cheerio": "latest",
+    "html-entities": "^1.2.1",
     "request": "latest",
     "request-promise": "^4.2.0"
   },
