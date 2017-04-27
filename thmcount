@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 
-var file = process.argv[2];
-if(file[0]!='.') file="./"+file;
-var a = require(file);
-if(a.theme==undefined) console.log(Object.keys(a).length);
-else console.log(Object.keys(a.theme).length);
+var file = process.argv;
+
+for(var i = 2; i < process.argv.length; i++){
+	if(file[i][0] != '.') file[i]="./"+file[i];
+	var a = require(file[i]);
+	if(a.theme==undefined) {
+		console.log(file[i].substr(9)+' : '+Object.keys(a).length);
+	}
+	else {
+		console.log(file[i].substr(9)+' : '+Object.keys(a.theme).length);
+	}
+}
+
+

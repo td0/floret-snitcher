@@ -18,25 +18,34 @@ if(arg1 != undefined && arg2 != undefined){
     const j1 = require(arg1);
     const j2 = require(arg2);
     var merged = j1;
+    var cmerged = 0;
+    var cdupe = 0;
 
     j2key = Object.keys(j2);
     for(var idx=0, len=j2key.length; idx<len; idx++){
-        merged[j2key[idx]] = j2[j2key[idx]];
+        if(merged[j2key[idx]] != undefined){
+            cdupe++;
+        }else{
+            cmerged++;
+            merged[j2key[idx]] = j2[j2key[idx]];
+        }
     }
 
     rl.question('enter merged file name : ', (answer) => {
         fn = answer;
-        console.log('merged file name is : ' + fn);  
 
         fs.writeFile('./output/'+fn+'.json', JSON.stringify(merged), function(err){
             if(!err){
-                process.stdout.write('\n\nFile successfully merged!'+
+                process.stdout.write('\nFile successfully merged!'+
                     '\nCheck your project directory for the \'./output/'+
-                    fn+'\n');
+                    fn+'.json\n');
             }else{
                 process.stdout.write('\033[<2>B' + err);
             }
         });
+        console.log(`\nMerged\t\t = ${cmerged}\n`+
+            `Duplicate\t = ${cdupe}\n`+
+            `Total\t\t = ${Object.keys(j1).length}`);
         rl.close();
     });
 
