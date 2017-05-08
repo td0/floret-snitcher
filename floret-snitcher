@@ -21,16 +21,23 @@ argparser.addArgument(
     }
 );
 argparser.addArgument(
-    '-j',
+    '-p',
     {
-        help: 'Get .json output instead of .txt',
+        help: 'Get plain .txt output instead of .json',
         action: 'storeTrue'
     }
 );
 argparser.addArgument(
     '-t',
     {
-        // help: 'Get spaced & tabbed json instead of single-line one',
+        help: 'Get spaced & tabbed json instead of single-line one',
+        action: 'storeTrue'
+    }
+);
+argparser.addArgument(
+    '-f',
+    {
+        help: 'Get fulll json containing full hyperlink instead of name and ID',
         action: 'storeTrue'
     }
 );
@@ -39,14 +46,8 @@ argparser.addArgument(
     {
         help: 'number of item fetched in a single queue (default = 3)',
         defaultValue: 3,
-        action: 'store'
-    }
-);
-argparser.addArgument(
-    '-f',
-    {
-        // help: 'Get fulll json containing full hyperlink instead of name and ID',
-        action: 'storeTrue'
+        action: 'store',
+        choices: ['1','2','3','4','5','6','7']
     }
 );
 args=argparser.parseArgs();
@@ -54,7 +55,7 @@ args=argparser.parseArgs();
 var retry = 3; // retry limit 
 const items_per_q = args.queue; // items fetched per queue
 const official = args.c; // true : official || false : creator
-const fmt = (!args.j)?'txt':'json'; // json or txt formating for output
+const fmt = (!args.p)?'json':'txt'; // json or txt formating for output
 const tjson = args.t; // true : tabbed json || false : single-line json
 const fjson = args.f; // true : full data json || false : short data json
 var failedflag = false; // if an item failed, this will turn into true
@@ -220,16 +221,29 @@ function doLoopQueue(){
     }
 }
 
+function updater(x){
+    try {
+        l = require('./output/'+x+'.json');
+        console.log('\n\x1b[46m\x1b[30m Updating existing data... \x1b[0m');
+    } catch(err) {
+        console.log('\n\x1b[46m\x1b[30m Creating new entries... \x1b[0m');
+    }
+
+}
+
 var url,fn,part;
+
 if(official){
-    url = 'https://store.line.me/themeshop/showcase/new/en?page=';
     fn = 'officials';
+    url = 'https://store.line.me/themeshop/showcase/new/en?page=';
     part = 1;
+    if(fmt=='json') updater(fn);
 }else{
+    fn = 'creators';
     url = ['https://store.line.me/themeshop/showcase/top_creators/en?page=',
         'https://store.line.me/themeshop/showcase/new_creators/en?page='];
-    fn = 'creators_tmp';
     part = 2;
+    if(fmt=='json') updater(fn);
     console.log('\x1b[45m\x1b[37m Fetching Creators\' popular themes \x1b[0m');
 }
 doLoopQueue();
