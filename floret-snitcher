@@ -54,7 +54,7 @@ args=argparser.parseArgs();
 var retry = 3; // retry limit 
 const items_per_q = args.queue; // items fetched per queue
 const official = args.c; // true : official || false : creator
-const fmt = (args.j)?'json':'txt'; // json or txt formating for output
+const fmt = (!args.j)?'txt':'json'; // json or txt formating for output
 const tjson = args.t; // true : tabbed json || false : single-line json
 const fjson = args.f; // true : full data json || false : short data json
 var failedflag = false; // if an item failed, this will turn into true
@@ -114,8 +114,7 @@ var q = async.queue(function(task, callback){
         uri: task.url,
         resolveWithFullResponse: true
     };
-    rp(options)
-    .then(function(response){
+    rp(options).then(function(response){
         let $ = cheerio.load(response.body);
         $('.mdCMN05Ttl').each(function(){
             cr = (n==1)?'':'\n\n';
@@ -199,11 +198,8 @@ function writeFile(){
 
 function safePush(safe_i){
     var urli;
-    if(official){
-        urli = url;
-    }else{
-        urli = (part == 2)? url[0]: url[1];
-    }
+    if(official) urli = url;
+    else urli = (part == 2)? url[0]: url[1];
     q.push({url:urli+safe_i, idx: safe_i}, function(x,y){
         process.stdout.write('on page '+x+
             ' -> '+ctx+' Pages, '+
