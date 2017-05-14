@@ -4,6 +4,7 @@
   "description": "Gratter le fleur",
   "main": "floret-snitcher",
   "author": "td0",
+  "private": true,
   "dependencies": {
     "argparse": "^1.0.9",
     "async": "^2.3.0",
