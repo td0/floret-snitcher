@@ -61,10 +61,11 @@ const fjson = args.f; // true : full data json || false : short data json
 var failedflag = false; // if an item failed, this will turn into true
 var failedPages = []; // array of pages that are failed to be fetched
 var ctx = 1; // pages downloaded loop index
-var n = 1; // total themes fetched
+var n = 0; // total themes fetched
 var dupe = 0; // total duplicate themes
 var resp = 200; // initial responseCode
 var l=(fmt=='txt')?'' : {};  // the output data get stored in this variable
+var l_old = {};
 const e = new Entities();
 const mxi = (official) ? 15:209; // maximum amount of pages
 
@@ -118,7 +119,7 @@ var q = async.queue(function(task, callback){
     rp(options).then(function(response){
         let $ = cheerio.load(response.body);
         $('.mdCMN05Ttl').each(function(){
-            cr = (n==1)?'':'\n\n';
+            cr = (n==0)?'':'\n\n';
             img = $(this).prev().children().attr('src');
             id = (img.length == 127)?img.substr(53,48):img.substr(53,47);
             dl = 'http://dl.shop.line.naver.jp/themeshop/v1/products/'+
@@ -128,7 +129,7 @@ var q = async.queue(function(task, callback){
                     l+=cr+tn+"\n"+dl;
                     n++;
             }else if(fmt=='json'){
-                if(l[tn] !== undefined) dupe++;
+                if(l_old[tn] !== undefined) dupe++;
                 else{
                     n++;
                     l[tn] = (!fjson)? id :
@@ -168,7 +169,7 @@ q.drain = function(){
         failedPages = [];
         console.log('\n\x1b[42m\x1b[30mDone!\x1b[0m');
         if(part == 0){
-            writeFile();
+            if(n!=0) writeFile();
         }else{
             console.log('\n\n\x1b[45m\x1b[37m Fetching Creators\' new themes \x1b[0m');
             doLoopQueue();
@@ -177,6 +178,10 @@ q.drain = function(){
 }
 
 function writeFile(){
+    var l_old_keys = Object.keys(l_old);
+    for (var x = 0; x<l_old_keys.length; x++){
+        l[l_old_keys[x]] = l_old[l_old_keys[x]];
+    }
     var odir;
     if(fjson) odir = './output/redundant/';
     else if(fmt == 'txt') odir = './output/txt/';
@@ -204,7 +209,7 @@ function safePush(safe_i){
     q.push({url:urli+safe_i, idx: safe_i}, function(x,y){
         process.stdout.write('on page '+x+
             ' -> '+ctx+' Pages, '+
-            (n-1)+' Themes, '+
+            (n)+' Themes, '+
             dupe+' Duplicates\r');
         if(y!=undefined){
             failedflag = true;
@@ -223,7 +228,7 @@ function doLoopQueue(){
 
 function updater(x){
     try {
-        l = require('./output/'+x+'.json');
+        l_old = require('./output/'+x+'.json');
         console.log('\n\x1b[46m\x1b[30m Updating existing data... \x1b[0m');
     } catch(err) {
         console.log('\n\x1b[46m\x1b[30m Creating new entries... \x1b[0m');
@@ -247,8 +252,3 @@ if(official){
     console.log('\x1b[45m\x1b[37m Fetching Creators\' popular themes \x1b[0m');
 }
 doLoopQueue();
-
-
-
-
-
